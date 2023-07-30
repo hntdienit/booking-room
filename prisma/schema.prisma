@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int              @id @default(autoincrement())
+  email             String           @unique
+  password          String
+  fullName          String
+  phone             String?
+  avatarUrl         String?
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  resetPasswordHash String?
+  refreshToken      String?
+  bookingUser       Booking[]        @relation("bookingUser")
+  bookingAdmin      Booking[]        @relation("bookingAdmin")
+  role              Role?            @relation("userRole", fields: [roleId], references: [id])
+  roleId            Int?
+  UserPermission    UserPermission[] @relation("userUserPermission")
+}
+
+model Room {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+  color         String    @unique
+  capacity      Int
+  isEnable      Boolean   @default(true)
+  disableReason String?
+  booking       Booking[]
+}
+
+enum Status {
+  reject
+  approved
+  pending
+  cancel
+}
+
+model Booking {
+  id                Int      @id @default(autoincrement())
+  startTime         DateTime
+  endTime           DateTime
+  reason            String
+  status            Status   @default(pending)
+  rejectedReason    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdByUser     User?    @relation("bookingUser", fields: [createdByUserId], references: [id])
+  createdByUserId   Int?
+  modifiedByAdmin   User?    @relation("bookingAdmin", fields: [modifiedByAdminId], references: [id])
+  modifiedByAdminId Int?
+  room              Room?    @relation(fields: [roomId], references: [id])
+  roomId            Int?
+}
+
+model Role {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  isSystem       Boolean
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User[]           @relation("userRole")
+  rolePermission RolePermission[] @relation("roleRolePermission")
+}
+
+model Permission {
+  id             Int              @id @default(autoincrement())
+  name           String
+  code           String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  disableAbility String[]
+  rolePermission RolePermission[] @relation("permissionRolePermission")
+  UserPermission UserPermission[] @relation("permissionUserPermission")
+}
+
+model Ability {
+  id             Int              @id @default(autoincrement())
+  name           String
+  code           String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  rolePermission RolePermission[] @relation("abilityRolePermission")
+  UserPermission UserPermission[] @relation("abilityUserPermission")
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  role         Role       @relation("roleRolePermission", fields: [roleId], references: [id])
+  roleId       Int
+  permission   Permission @relation("permissionRolePermission", fields: [permissionId], references: [id])
+  permissionId Int
+  ability      Ability    @relation("abilityRolePermission", fields: [abilityId], references: [id])
+  abilityId    Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId, abilityId])
+}
+
+model UserPermission {
+  id           Int        @id @default(autoincrement())
+  isEnable     Boolean    @default(true)
+  user         User       @relation("userUserPermission", fields: [userId], references: [id])
+  userId       Int
+  permission   Permission @relation("permissionUserPermission", fields: [permissionId], references: [id])
+  permissionId Int
+  ability      Ability    @relation("abilityUserPermission", fields: [abilityId], references: [id])
+  abilityId    Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, permissionId, abilityId])
+}

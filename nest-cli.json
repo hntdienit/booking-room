@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/booking-room/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      "/**/*.hbs"
+    ],
+    "watchAssets": true,
+    "webpack": true,
+    "tsConfigPath": "apps/booking-room/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/booking-room",
+  "projects": {
+    "booking-room": {
+      "type": "application",
+      "root": "apps/booking-room",
+      "entryFile": "main",
+      "sourceRoot": "apps/booking-room/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/booking-room/tsconfig.app.json"
+      }
+    },
+    "mail": {
+      "type": "application",
+      "root": "apps/mail",
+      "entryFile": "main",
+      "sourceRoot": "apps/mail/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/mail/tsconfig.app.json"
+      }
+    }
+  }
+}
